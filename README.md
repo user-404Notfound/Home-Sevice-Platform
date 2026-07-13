@@ -73,8 +73,12 @@ Follow these steps to run the project locally on your machine.
    npm run dev
    ```
 
-*(Alternatively, you can run `npm install` in both folders and simply use `npm run dev` from the root directory to start both servers concurrently!)*
-
+### 4. Quick Start (Run Both Concurrently)
+Instead of starting the backend and frontend in separate terminals, you can launch both at the same time from the root folder! 
+Just make sure you've run `npm install` in both the `frontend/` and `backend/` folders, then run this from the project root:
+```bash
+npm run dev
+```
 ##  Architecture Notes
 The system utilizes a heavily normalized PostgreSQL schema (13 distinct tables) to ensure strong relational mapping. For example, bookings cannot be made for invalid providers or subservices, and cart checkouts utilize transactional queries to seamlessly map multiple services into singular booking tickets.
 
