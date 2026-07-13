@@ -1,0 +1,22 @@
+{
+  "name": "home-service-app",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently \"cd frontend && npm run dev\" \"cd backend && npm run dev\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/user-404NotFound/Home-Sevice-Platform.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/user-404NotFound/Home-Sevice-Platform/issues"
+  },
+  "homepage": "https://github.com/user-404NotFound/Home-Sevice-Platform#readme",
+  "devDependencies": {
+    "concurrently": "^10.0.3"
+  }
+}
