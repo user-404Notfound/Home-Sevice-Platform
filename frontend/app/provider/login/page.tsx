@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-
+import { apiUrl } from "@/lib/api";
 export default function ProviderLogin() {
     const router = useRouter();
     const [identifier, setIdentifier] = useState("");
@@ -30,7 +30,7 @@ export default function ProviderLogin() {
             const isEmail = identifier.includes("@");
             const payload = isEmail ? { email: identifier, password } : { phone: identifier, password };
 
-            const res = await fetch("http://localhost:5000/provider/login", {
+            const res = await fetch(`${apiUrl}/provider/login`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload)
@@ -44,7 +44,7 @@ export default function ProviderLogin() {
 
             localStorage.setItem("providerToken", data.token);
             localStorage.setItem("providerData", JSON.stringify(data.provider));
-            
+
             router.push("/provider/dashboard");
 
         } catch (err: any) {
@@ -102,7 +102,7 @@ export default function ProviderLogin() {
                                 required
                             />
                         </div>
-                        
+
                         <button
                             type="submit"
                             disabled={loading}

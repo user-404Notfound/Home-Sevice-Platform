@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import Navbar from "../components/Navbar";
-
+import { apiUrl } from "@/lib/api";
 function ServicesContent() {
   const searchParams = useSearchParams();
   const query = searchParams.get("search");
@@ -15,9 +15,9 @@ function ServicesContent() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const url = query 
-        ? `http://localhost:5000/services/search?q=${encodeURIComponent(query)}`
-        : "http://localhost:5000/services";
+    const url = query
+      ? `${apiUrl}/services/search?q=${encodeURIComponent(query)}`
+      : `${apiUrl}/services`;
 
     fetch(url)
       .then((res) => res.json())
@@ -48,7 +48,7 @@ function ServicesContent() {
         <div className="relative max-w-4xl mb-12">
           <div className="absolute -top-20 -left-20 w-64 h-64 bg-amber-400/20 rounded-full blur-[80px] pointer-events-none"></div>
           <div className="absolute top-0 right-10 w-48 h-48 bg-emerald-400/10 rounded-full blur-[60px] pointer-events-none"></div>
-          
+
           <h1 className="relative z-10 text-5xl lg:text-7xl font-black tracking-tight text-stone-900 mb-6 drop-shadow-sm">
             {query ? `Results for "${query}"` : "Discover Services"}
           </h1>
@@ -61,8 +61,8 @@ function ServicesContent() {
         <div className="sticky top-20 z-40 -mx-6 px-6 lg:mx-0 lg:px-0 py-4 bg-[#fafafa]/80 backdrop-blur-xl border-b border-stone-200/50 mb-12 shadow-[0_4px_30px_rgb(0,0,0,0.02)] transition-all rounded-b-3xl lg:rounded-3xl">
           <div className="flex items-center gap-4">
             <div className="hidden lg:flex items-center gap-2 pr-6 border-r border-stone-200">
-                <svg className="w-5 h-5 text-stone-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" /></svg>
-                <span className="text-sm font-bold text-stone-500 uppercase tracking-widest">Filter</span>
+              <svg className="w-5 h-5 text-stone-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" /></svg>
+              <span className="text-sm font-bold text-stone-500 uppercase tracking-widest">Filter</span>
             </div>
             <div className="flex overflow-x-auto gap-3 scrollbar-hide pb-2 pt-2 items-center flex-1">
               {categories.map((cat) => (
@@ -70,16 +70,16 @@ function ServicesContent() {
                   key={cat}
                   onClick={() => setActiveCategory(cat)}
                   className={`relative shrink-0 whitespace-nowrap px-6 py-3 rounded-2xl text-sm font-bold transition-all duration-300 overflow-hidden group ${activeCategory === cat
-                      ? 'text-white shadow-[0_8px_20px_rgb(0,0,0,0.1)] -translate-y-1'
-                      : 'bg-white text-stone-600 border border-stone-200/80 hover:border-amber-300 hover:text-stone-900 hover:shadow-lg hover:-translate-y-0.5'
+                    ? 'text-white shadow-[0_8px_20px_rgb(0,0,0,0.1)] -translate-y-1'
+                    : 'bg-white text-stone-600 border border-stone-200/80 hover:border-amber-300 hover:text-stone-900 hover:shadow-lg hover:-translate-y-0.5'
                     }`}
                 >
                   {activeCategory === cat && (
-                      <div className="absolute inset-0 bg-gradient-to-r from-stone-900 to-stone-800 -z-10"></div>
+                    <div className="absolute inset-0 bg-gradient-to-r from-stone-900 to-stone-800 -z-10"></div>
                   )}
                   <span className="flex items-center gap-2 relative z-10">
-                      {activeCategory === cat && <span className="w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.8)] animate-pulse"></span>}
-                      {cat}
+                    {activeCategory === cat && <span className="w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.8)] animate-pulse"></span>}
+                    {cat}
                   </span>
                 </button>
               ))}
@@ -148,9 +148,9 @@ function ServicesContent() {
 }
 
 export default function ServicesPage() {
-    return (
-        <Suspense fallback={<div>Loading...</div>}>
-            <ServicesContent />
-        </Suspense>
-    )
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ServicesContent />
+    </Suspense>
+  )
 }

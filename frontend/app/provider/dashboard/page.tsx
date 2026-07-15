@@ -3,13 +3,13 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-
+import { apiUrl } from "@/lib/api";
 export default function Dashboard() {
     const router = useRouter();
     const [provider, setProvider] = useState<any>(null);
     const [stats, setStats] = useState({ total: 0, pending: 0, completed: 0, cancelled: 0 });
     const [bookings, setBookings] = useState<any[]>([]);
-    
+
     // Service state
     const [hasServices, setHasServices] = useState<boolean | null>(null);
     const [loading, setLoading] = useState(true);
@@ -21,12 +21,12 @@ export default function Dashboard() {
     const [basePrice, setBasePrice] = useState("");
     const [experienceYears, setExperienceYears] = useState("");
     const [description, setDescription] = useState("");
-    
+
     const [availableSubservices, setAvailableSubservices] = useState<any[]>([]);
     const [selectedSubservices, setSelectedSubservices] = useState<{ id: number, price: string }[]>([]);
     const [customSubservices, setCustomSubservices] = useState<{ name: string, price: string }[]>([]);
     const [savingWizard, setSavingWizard] = useState(false);
-    
+
     // Edit specific state
     const [isEditingServices, setIsEditingServices] = useState(false);
     const [savedCategoryId, setSavedCategoryId] = useState<number | null>(null);
@@ -48,14 +48,14 @@ export default function Dashboard() {
 
             try {
                 // Fetch Services Status First
-                const servicesRes = await fetch("http://localhost:5000/provider/my-services", {
+                const servicesRes = await fetch(`${apiUrl}/provider/my-services`, {
                     headers: { "Authorization": `Bearer ${token}` }
                 });
-                
+
                 if (servicesRes.ok) {
                     const servicesData = await servicesRes.json();
                     setHasServices(servicesData.hasServices);
-                    
+
                     if (!servicesData.hasServices) {
                         // Load categories for the wizard
                         fetch("http://localhost:5000/services")
@@ -73,30 +73,30 @@ export default function Dashboard() {
                             setExperienceYears(serv.experience_years.toString());
                             setDescription(serv.description || "");
                         }
-                        
+
                         const standardSubs = servicesData.subservices
-                            .filter((s:any) => s.subservice_id !== null)
-                            .map((s:any) => ({ id: s.subservice_id, price: s.custom_price.toString() }));
+                            .filter((s: any) => s.subservice_id !== null)
+                            .map((s: any) => ({ id: s.subservice_id, price: s.custom_price.toString() }));
                         const customSubs = servicesData.subservices
-                            .filter((s:any) => s.subservice_id === null)
-                            .map((s:any) => ({ name: s.custom_name, price: s.custom_price.toString() }));
-                        
+                            .filter((s: any) => s.subservice_id === null)
+                            .map((s: any) => ({ name: s.custom_name, price: s.custom_price.toString() }));
+
                         setSelectedSubservices(standardSubs);
                         setCustomSubservices(customSubs);
-                        
+
                         setActiveServicesConfig({
                             services: servicesData.services,
                             subservices: servicesData.subservices
                         });
 
-                        fetch("http://localhost:5000/services")
+                        fetch(`${apiUrl}/services`)
                             .then(res => res.json())
                             .then(data => setWizardCategories(data));
                     }
                 }
 
                 // Fetch stats
-                const statsRes = await fetch("http://localhost:5000/provider/stats", {
+                const statsRes = await fetch(`${apiUrl}/provider/stats`, {
                     headers: { "Authorization": `Bearer ${token}` }
                 });
                 if (statsRes.ok) {
@@ -105,8 +105,8 @@ export default function Dashboard() {
                 }
 
                 // Fetch bookings
-                const bookingsRes = await fetch("http://localhost:5000/provider/bookings", {
-                     headers: { "Authorization": `Bearer ${token}` }
+                const bookingsRes = await fetch(`${apiUrl}/provider/bookings`, {
+                    headers: { "Authorization": `Bearer ${token}` }
                 });
                 if (bookingsRes.ok) {
                     const bookingsData = await bookingsRes.json();
@@ -114,8 +114,8 @@ export default function Dashboard() {
                 }
 
                 // Fetch reviews
-                const reviewsRes = await fetch("http://localhost:5000/provider/reviews", {
-                     headers: { "Authorization": `Bearer ${token}` }
+                const reviewsRes = await fetch(`${apiUrl}/provider/reviews`, {
+                    headers: { "Authorization": `Bearer ${token}` }
                 });
                 if (reviewsRes.ok) {
                     const reviewsData = await reviewsRes.json();
@@ -139,7 +139,7 @@ export default function Dashboard() {
     // Fetch subservices when a category is selected
     useEffect(() => {
         if (selectedCategoryId) {
-            fetch(`http://localhost:5000/services/${selectedCategoryId}/subservices`)
+            fetch(`${apiUrl}/services/${selectedCategoryId}/subservices`)
                 .then(res => res.json())
                 .then(data => {
                     setAvailableSubservices(data);
@@ -159,7 +159,7 @@ export default function Dashboard() {
         setSavingWizard(true);
 
         const token = localStorage.getItem("providerToken");
-        
+
         const payload = {
             services: [
                 {
@@ -176,11 +176,11 @@ export default function Dashboard() {
         };
 
         try {
-            const res = await fetch("http://localhost:5000/provider/my-services", {
+            const res = await fetch(`${apiUrl}/provider/my-services`, {
                 method: "POST",
-                headers: { 
+                headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}` 
+                    "Authorization": `Bearer ${token}`
                 },
                 body: JSON.stringify(payload)
             });
@@ -231,7 +231,7 @@ export default function Dashboard() {
             const bodyPayload: any = { status };
             if (pin) bodyPayload.pin = pin;
 
-            const res = await fetch(`http://localhost:5000/provider/bookings/${bookingId}/status`, {
+            const res = await fetch(`${apiUrl}/provider/bookings/${bookingId}/status`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
@@ -243,12 +243,12 @@ export default function Dashboard() {
             if (res.ok) {
                 setBookings(prev => prev.map(b => b.booking_id === bookingId ? { ...b, status } : b));
                 setStats(prev => {
-                     const oldStatus = bookings.find(b => b.booking_id === bookingId)?.status;
-                     const newStats = { ...prev };
-                     if (oldStatus === 'pending') newStats.pending--;
-                     if (status === 'completed') newStats.completed++;
-                     if (status === 'cancelled') newStats.cancelled++;
-                     return newStats;
+                    const oldStatus = bookings.find(b => b.booking_id === bookingId)?.status;
+                    const newStats = { ...prev };
+                    if (oldStatus === 'pending') newStats.pending--;
+                    if (status === 'completed') newStats.completed++;
+                    if (status === 'cancelled') newStats.cancelled++;
+                    return newStats;
                 });
             } else {
                 const errorData = await res.json();
@@ -297,7 +297,7 @@ export default function Dashboard() {
                                 <h1 className="text-3xl md:text-4xl font-black mb-2 tracking-tight">Welcome, {provider?.name?.split(' ')[0]}! 🎉</h1>
                             )}
                             <p className="text-stone-300 font-medium text-lg leading-relaxed max-w-xl">
-                                {hasServices 
+                                {hasServices
                                     ? "Update the services you provide, tweak your pricing, and manage custom task details below."
                                     : "Let's get your profile set up so customers can start booking you. What services do you provide?"
                                 }
@@ -307,7 +307,7 @@ export default function Dashboard() {
 
                     <div className="bg-white rounded-3xl p-6 md:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-stone-100 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
                         <div className="space-y-8">
-                            
+
                             {/* Step 1: Category */}
                             <div>
                                 <h2 className="text-xl font-bold text-stone-900 mb-4 flex items-center gap-3">
@@ -317,9 +317,9 @@ export default function Dashboard() {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="col-span-full md:col-span-1">
                                         <label className="block text-xs font-semibold text-stone-500 uppercase tracking-wider mb-2">Category</label>
-                                        <select 
-                                            value={selectedCategoryId || ""} 
-                                            onChange={(e) => setSelectedCategoryId(Number(e.target.value))} 
+                                        <select
+                                            value={selectedCategoryId || ""}
+                                            onChange={(e) => setSelectedCategoryId(Number(e.target.value))}
                                             className="w-full px-4 py-3.5 rounded-xl bg-stone-50/50 border border-stone-200 text-stone-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all font-medium appearance-none"
                                         >
                                             <option value="" disabled>Select a category</option>
@@ -353,14 +353,14 @@ export default function Dashboard() {
                                         Configure Sub-services
                                     </h2>
                                     <p className="text-sm text-stone-500 mb-6">Select the specific tasks you perform and set your own prices. Add any custom ones below.</p>
-                                    
+
                                     <div className="space-y-3">
                                         {availableSubservices.map(sub => {
                                             const isSelected = selectedSubservices.some(s => s.id === sub.id);
                                             return (
                                                 <div key={sub.id} className={`flex items-center gap-4 p-4 rounded-2xl border transition-all ${isSelected ? 'border-amber-500/50 bg-amber-50/30' : 'border-stone-200 bg-white'}`}>
-                                                    <input 
-                                                        type="checkbox" 
+                                                    <input
+                                                        type="checkbox"
                                                         checked={isSelected}
                                                         onChange={(e) => {
                                                             if (e.target.checked) {
@@ -377,8 +377,8 @@ export default function Dashboard() {
                                                     {isSelected && (
                                                         <div className="flex items-center gap-2">
                                                             <span className="text-sm font-semibold text-stone-500">₹</span>
-                                                            <input 
-                                                                type="number" 
+                                                            <input
+                                                                type="number"
                                                                 value={selectedSubservices.find(s => s.id === sub.id)?.price || ""}
                                                                 onChange={(e) => {
                                                                     setSelectedSubservices(selectedSubservices.map(s => s.id === sub.id ? { ...s, price: e.target.value } : s));
@@ -397,21 +397,21 @@ export default function Dashboard() {
                                         <h3 className="text-sm font-bold text-stone-900 mb-3">Add Custom Sub-services</h3>
                                         <div className="space-y-3">
                                             {customSubservices.map((c, i) => (
-                                                 <div key={i} className="flex items-center gap-3">
-                                                    <input 
-                                                        type="text" 
-                                                        value={c.name} 
+                                                <div key={i} className="flex items-center gap-3">
+                                                    <input
+                                                        type="text"
+                                                        value={c.name}
                                                         onChange={(e) => setCustomSubservices(customSubservices.map((item, idx) => idx === i ? { ...item, name: e.target.value } : item))}
-                                                        placeholder="e.g. Special Deep Clean" 
+                                                        placeholder="e.g. Special Deep Clean"
                                                         className="flex-1 px-4 py-2.5 rounded-xl bg-stone-50 border border-stone-200 focus:border-amber-500"
                                                     />
                                                     <div className="flex items-center gap-2">
                                                         <span className="text-stone-500 font-semibold">₹</span>
-                                                        <input 
-                                                            type="number" 
-                                                            value={c.price} 
+                                                        <input
+                                                            type="number"
+                                                            value={c.price}
                                                             onChange={(e) => setCustomSubservices(customSubservices.map((item, idx) => idx === i ? { ...item, price: e.target.value } : item))}
-                                                            placeholder="Amount" 
+                                                            placeholder="Amount"
                                                             className="w-24 px-3 py-2.5 rounded-xl bg-stone-50 border border-stone-200 focus:border-amber-500"
                                                         />
                                                     </div>
@@ -420,7 +420,7 @@ export default function Dashboard() {
                                                     </button>
                                                 </div>
                                             ))}
-                                            <button 
+                                            <button
                                                 onClick={() => setCustomSubservices([...customSubservices, { name: "", price: "" }])}
                                                 className="flex items-center gap-2 text-sm font-bold text-amber-600 hover:text-amber-700 bg-amber-50 hover:bg-amber-100 px-4 py-2.5 rounded-xl transition-colors"
                                             >
@@ -436,17 +436,17 @@ export default function Dashboard() {
                             {/* Submit */}
                             <div className="pt-8 border-t border-stone-100 flex justify-end gap-4">
                                 {hasServices && (
-                                    <button 
+                                    <button
                                         onClick={() => {
                                             setIsEditingServices(false);
-                                            window.location.reload(); 
+                                            window.location.reload();
                                         }}
                                         className="px-6 py-4 bg-white text-stone-900 border-2 border-stone-200 rounded-xl font-bold hover:bg-stone-50 transition-all flex items-center gap-2"
                                     >
                                         Cancel
                                     </button>
                                 )}
-                                <button 
+                                <button
                                     onClick={handleSaveServices}
                                     disabled={!selectedCategoryId || !basePrice || savingWizard}
                                     className="px-8 py-4 bg-stone-900 text-white rounded-xl font-bold hover:bg-stone-800 disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_4px_14px_0_rgba(0,0,0,0.1)] transition-all flex items-center gap-2"
@@ -465,12 +465,12 @@ export default function Dashboard() {
     // REGULAR DASHBOARD VIEW
     return (
         <div className="max-w-[1600px] mx-auto px-4 py-8 md:px-8 space-y-10 animate-fade-in pb-20">
-            
+
             {/* Header section with glassmorphism */}
             <div className="relative rounded-3xl overflow-hidden bg-white/60 backdrop-blur-3xl border border-white p-8 md:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
                 <div className="absolute -right-20 -top-20 w-64 h-64 bg-emerald-400/20 rounded-full blur-[80px]"></div>
                 <div className="absolute -left-20 -bottom-20 w-64 h-64 bg-amber-400/20 rounded-full blur-[80px]"></div>
-                
+
                 <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                     <div>
                         <h1 className="text-3xl md:text-4xl font-black tracking-tight text-stone-900 mb-2">
@@ -479,7 +479,7 @@ export default function Dashboard() {
                         <p className="text-stone-500 font-medium text-lg">Manage your tasks and track your performance.</p>
                     </div>
                     <div>
-                        <button 
+                        <button
                             onClick={() => setIsEditingServices(true)}
                             className="px-6 py-3.5 bg-stone-900 text-white rounded-xl font-bold hover:bg-stone-800 transition-all shadow-[0_4px_14px_0_rgba(0,0,0,0.1)] flex items-center gap-2"
                         >
@@ -500,7 +500,7 @@ export default function Dashboard() {
                 ].map((stat, i) => (
                     <div key={i} className={`bg-white rounded-3xl p-6 border border-stone-100 shadow-[0_2px_10px_rgba(0,0,0,0.02)] transition-all hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)] hover:-translate-y-1 relative overflow-hidden group`}>
                         <div className={`absolute top-0 right-0 w-24 h-24 ${stat.bg} rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110`}></div>
-                        
+
                         <div className="relative z-10">
                             <div className={`w-12 h-12 rounded-2xl ${stat.bg} ${stat.color} flex items-center justify-center mb-4 ring-1 ${stat.ring}`}>
                                 <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -535,7 +535,7 @@ export default function Dashboard() {
                                         <span className="bg-white px-3 py-1.5 rounded-lg border border-stone-100 shadow-sm">Experience: <span className="text-stone-900">{svc.experience_years} Yrs</span></span>
                                     </div>
                                 </div>
-                                
+
                                 {svc.description && (
                                     <p className="text-stone-600 mb-6 italic">"{svc.description}"</p>
                                 )}
@@ -570,7 +570,7 @@ export default function Dashboard() {
                             <div key={rev.review_id} className="p-6 rounded-2xl bg-stone-50 border border-stone-100">
                                 <div className="flex items-center gap-1 mb-3">
                                     {Array(5).fill(0).map((_, i) => (
-                                        <svg key={i} className={`w-5 h-5 ${i < rev.rating ? 'text-amber-400' : 'text-stone-300'}`} fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                                        <svg key={i} className={`w-5 h-5 ${i < rev.rating ? 'text-amber-400' : 'text-stone-300'}`} fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
                                     ))}
                                 </div>
                                 <p className="text-stone-700 font-medium mb-3 italic">"{rev.comment}"</p>
@@ -590,7 +590,7 @@ export default function Dashboard() {
                         <p className="text-stone-500 font-medium mt-1">Manage and update your customer bookings.</p>
                     </div>
                 </div>
-                
+
                 {bookings.length === 0 ? (
                     <div className="py-20 text-center flex flex-col items-center justify-center">
                         <div className="w-24 h-24 bg-stone-50 rounded-full flex items-center justify-center mb-6">
@@ -606,14 +606,14 @@ export default function Dashboard() {
                             const isPending = booking.status === 'pending';
 
                             return (
-                                <div 
-                                    key={booking.booking_id} 
+                                <div
+                                    key={booking.booking_id}
                                     className="group rounded-2xl border border-stone-100 overflow-hidden transition-all hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)] bg-white animate-slide-up hover:border-amber-500/20"
                                     style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'both' }}
                                 >
                                     <div className="p-6 md:p-8">
                                         <div className="flex flex-col lg:flex-row gap-8">
-                                            
+
                                             {/* Booking Info */}
                                             <div className="flex-1 space-y-6">
                                                 <div className="flex items-start justify-between">
@@ -640,7 +640,7 @@ export default function Dashboard() {
                                                     <div className="bg-stone-50 p-4 rounded-2xl border border-stone-100 group-hover:bg-amber-50/30 transition-colors">
                                                         <div className="flex items-center gap-2 mb-3">
                                                             <div className="w-8 h-8 rounded-full bg-stone-200 flex items-center justify-center text-stone-500 font-bold text-xs uppercase">
-                                                                {booking.customer_name.substring(0,2)}
+                                                                {booking.customer_name.substring(0, 2)}
                                                             </div>
                                                             <div>
                                                                 <p className="font-bold text-stone-900 text-sm leading-tight">{booking.customer_name}</p>
@@ -654,15 +654,15 @@ export default function Dashboard() {
                                                     </div>
 
                                                     <div className="bg-stone-50 p-4 rounded-2xl border border-stone-100 group-hover:bg-amber-50/30 transition-colors">
-                                                         <p className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-3">Task Requirements</p>
-                                                         <ul className="space-y-2">
+                                                        <p className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-3">Task Requirements</p>
+                                                        <ul className="space-y-2">
                                                             {booking.items?.map((item: any, i: number) => (
                                                                 <li key={i} className="text-sm font-semibold text-stone-700 flex items-start gap-2">
                                                                     <svg className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                                                                     <span className="flex-1">{item.quantity}x {item.subservice_name}</span>
                                                                 </li>
                                                             ))}
-                                                         </ul>
+                                                        </ul>
                                                     </div>
                                                 </div>
                                             </div>
@@ -670,14 +670,14 @@ export default function Dashboard() {
                                             {/* Actions */}
                                             {isPending && (
                                                 <div className="flex flex-col gap-3 justify-center border-t lg:border-t-0 lg:border-l border-stone-100 pt-6 lg:pt-0 lg:pl-8 lg:min-w-[200px]">
-                                                    <button 
+                                                    <button
                                                         onClick={() => openPinModal(booking.booking_id)}
                                                         disabled={actionLoading !== null}
                                                         className="w-full relative flex items-center justify-center px-6 py-3.5 rounded-xl font-bold text-white bg-stone-900 shadow-[0_4px_14px_0_rgba(0,0,0,0.1)] hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(0,0,0,0.15)] transition-all disabled:opacity-50"
                                                     >
                                                         {actionLoading === `${booking.booking_id}-completed` ? 'Updating...' : 'Mark Completed'}
                                                     </button>
-                                                    <button 
+                                                    <button
                                                         onClick={() => updateBookingStatus(booking.booking_id, 'cancelled')}
                                                         disabled={actionLoading !== null}
                                                         className="w-full flex items-center justify-center px-6 py-3.5 rounded-xl font-bold bg-white border-2 border-stone-100 text-stone-600 hover:bg-stone-50 hover:text-stone-900 transition-all disabled:opacity-50"
@@ -704,9 +704,9 @@ export default function Dashboard() {
                         </div>
                         <h3 className="text-2xl font-black text-stone-900 text-center mb-2">Job Verification</h3>
                         <p className="text-stone-500 font-medium text-center mb-6 text-sm">Please ask the customer for the 6-digit completion PIN from their dashboard.</p>
-                        
+
                         <div className="mb-8 flex justify-center">
-                            <input 
+                            <input
                                 type="text"
                                 maxLength={6}
                                 value={pinInput}
@@ -717,13 +717,13 @@ export default function Dashboard() {
                         </div>
 
                         <div className="flex gap-3">
-                            <button 
+                            <button
                                 onClick={() => setPinModalOpen(false)}
                                 className="flex-1 px-4 py-3.5 font-bold text-stone-600 bg-white border-2 border-stone-200 rounded-xl hover:bg-stone-50 transition-colors"
                             >
                                 Cancel
                             </button>
-                            <button 
+                            <button
                                 onClick={submitCompletionPin}
                                 disabled={pinInput.length !== 6 || actionLoading !== null}
                                 className="flex-1 px-4 py-3.5 bg-stone-900 text-white rounded-xl font-bold hover:bg-stone-800 transition-colors shadow-lg disabled:opacity-50"

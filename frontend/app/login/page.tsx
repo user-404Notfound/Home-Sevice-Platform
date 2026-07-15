@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
-
+import { apiUrl } from "@/lib/api";
 export default function AuthPage() {
   const router = useRouter();
   const { loginStateHack, user, loading: authLoading } = useAuth();
@@ -48,7 +48,7 @@ export default function AuthPage() {
     setLoading(true);
 
     try {
-      const res = await fetch("http://localhost:5000/auth/login", {
+      const res = await fetch(`${apiUrl}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -65,13 +65,13 @@ export default function AuthPage() {
 
       // Cloud Hydration: Restore previous Cart session to local buffer
       try {
-          const cartRes = await fetch('http://localhost:5000/cart', {
-              headers: { 'Authorization': `Bearer ${data.token}` }
-          });
-          const cloudCart = await cartRes.json();
-          if (cloudCart && cloudCart.length > 0) {
-              localStorage.setItem("cart", JSON.stringify(cloudCart));
-          }
+        const cartRes = await fetch(`${apiUrl}/cart`, {
+          headers: { 'Authorization': `Bearer ${data.token}` }
+        });
+        const cloudCart = await cartRes.json();
+        if (cloudCart && cloudCart.length > 0) {
+          localStorage.setItem("cart", JSON.stringify(cloudCart));
+        }
       } catch (e) { console.error("Cloud Cart link failed", e); }
 
       setSuccess("Login successful. Redirecting...");
@@ -102,7 +102,7 @@ export default function AuthPage() {
     setLoading(true);
 
     try {
-      const res = await fetch("http://localhost:5000/auth/register", {
+      const res = await fetch(`${apiUrl}/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, phone, location, password }),
@@ -132,15 +132,15 @@ export default function AuthPage() {
 
       {/* Left side: Premium Bright Luxury Design (Hidden on Mobile) */}
       <div className="hidden lg:flex lg:w-1/2 relative flex-col justify-between overflow-hidden bg-gradient-to-br from-amber-50/50 via-white to-stone-50 z-0 border-r border-stone-100">
-        
+
         {/* Soft elegant background mesh & diffusion effects */}
         <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
           {/* Top-left very subtle warm glow */}
           <div className="absolute -top-[15%] -left-[10%] w-[60%] h-[60%] bg-amber-100 rounded-full filter blur-[100px] opacity-[0.4] animate-pulse"></div>
-          
+
           {/* Center-right clean ambient diffusion */}
           <div className="absolute top-[20%] right-[-20%] w-[70%] h-[70%] bg-orange-50 rounded-full filter blur-[120px] opacity-[0.6] animate-float"></div>
-          
+
           {/* Bottom focus zone behind text */}
           <div className="absolute -bottom-[20%] left-[5%] w-[90%] h-[70%] bg-stone-100 rounded-full filter blur-[140px] opacity-[0.8] animate-float-delayed"></div>
         </div>
