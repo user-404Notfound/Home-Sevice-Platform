@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Navbar from "../../../../components/Navbar";
 import { useAuth } from "../../../../context/AuthContext";
+import { apiUrl } from "@/lib/api";
 
 export default function ProviderMenuPage() {
   const { token } = useAuth();
@@ -25,7 +26,7 @@ export default function ProviderMenuPage() {
   useEffect(() => {
     if (!id || !providerId) return;
 
-    fetch(`http://localhost:5000/services/${id}/providers/${providerId}/menu`)
+    fetch(`${apiUrl}/services/${id}/providers/${providerId}/menu`)
       .then(res => {
           if (!res.ok) throw new Error("Failed to fetch menu");
           return res.json();
@@ -65,7 +66,7 @@ export default function ProviderMenuPage() {
       localStorage.setItem('cart', JSON.stringify(newCart));
 
       if (token) {
-        fetch('http://localhost:5000/cart/sync', {
+        fetch(`${apiUrl}/cart/sync`, {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json',

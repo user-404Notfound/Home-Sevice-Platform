@@ -4,6 +4,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { apiUrl } from "@/lib/api";
 
 export default function ProviderSignUp() {
     const router = useRouter();
@@ -44,7 +45,7 @@ export default function ProviderSignUp() {
                 area
             };
 
-            const res = await fetch("http://localhost:5000/provider/register", {
+            const res = await fetch(`${apiUrl}/provider/register`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload)

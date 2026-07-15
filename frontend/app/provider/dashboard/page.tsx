@@ -58,7 +58,7 @@ export default function Dashboard() {
 
                     if (!servicesData.hasServices) {
                         // Load categories for the wizard
-                        fetch("http://localhost:5000/services")
+                        fetch(`${apiUrl}/services`)
                             .then(res => res.json())
                             .then(data => setWizardCategories(data));
                         setLoading(false);
