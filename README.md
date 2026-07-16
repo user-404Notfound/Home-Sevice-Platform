@@ -68,7 +68,11 @@ Follow these steps to run the project locally on your machine.
    cd frontend
    npm install
    ```
-2. Start the Next.js development server (runs on `http://localhost:3000`):
+2. Create a `.env` or `.env.local` file in the `frontend/` directory and set the API URL:
+   ```env
+   NEXT_PUBLIC_API_URL=http://localhost:5000/api
+   ```
+3. Start the Next.js development server (runs on `http://localhost:3000`):
    ```bash
    npm run dev
    ```
