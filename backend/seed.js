@@ -1,3 +1,4 @@
+
 const pool = require('./db');
 
 async function seedDatabase() {

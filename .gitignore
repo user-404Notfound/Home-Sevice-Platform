@@ -6,3 +6,5 @@ frontend/node_modules/
 backend/node_modules/
 .env.local
 .DS_Store
+backend/db_migrations.js
+backend/scripts
